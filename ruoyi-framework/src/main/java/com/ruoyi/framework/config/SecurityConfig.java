@@ -115,7 +115,7 @@ public class SecurityConfig
                         .requestMatchers("/login", "/register", "/captchaImage").permitAll()
                         .requestMatchers(HttpMethod.GET, "/", "/*.html", "/**.html", "/**.css", "/**.js", "/profile/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/druid/**").permitAll()
-                        .requestMatchers("/system/course/**").permitAll()
+                        .requestMatchers("/system/course/**","system/teacher/**","system/advice/**").permitAll()
                     .anyRequest().authenticated();
             })
             // 添加Logout filter

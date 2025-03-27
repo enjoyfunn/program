@@ -8,18 +8,14 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.system.domain.CartItem;
 import com.ruoyi.system.domain.OrderItem;
+import com.ruoyi.system.domain.VipItem;
 import com.ruoyi.system.service.ICartItemService;
+import com.ruoyi.system.service.IVipItemService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -31,7 +27,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 订单列表Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-02-24
  */
@@ -45,6 +41,9 @@ public class OrderController extends BaseController
     @Autowired
     private ICartItemService cartItemService;
 
+    @Autowired
+    private IVipItemService  vipItemService;
+
     /**
      * 查询订单列表列表
      */
@@ -54,6 +53,14 @@ public class OrderController extends BaseController
     {
         startPage();
         List<Order> list = orderService.selectOrderList(order);
+        return getDataTable(list);
+    }
+
+    @GetMapping("/my-list")
+    public TableDataInfo userList()
+    {
+        startPage();
+        List<Order> list = orderService.selectOrderListById(SecurityUtils.getUserId());
         return getDataTable(list);
     }
 
@@ -107,13 +114,13 @@ public class OrderController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:order:remove')")
     @Log(title = "订单列表", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
+    @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(orderService.deleteOrderByIds(ids));
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create-normal")
     public AjaxResult createUserOrder(@RequestBody Order order) {
         List<CartItem> items = cartItemService.selectCartItemListById(SecurityUtils.getUserId());
 
@@ -145,6 +152,18 @@ public class OrderController extends BaseController
         order.setPrice(totalPrice.doubleValue());
         order.setOrderItemList(orderItemList);
 
+        return toAjax(orderService.insertOrder(order));
+    }
+    @PostMapping("/create-vip")
+    public AjaxResult createUserVipOrder(@RequestBody Order order,
+                                         @RequestParam Long id){
+        VipItem vipItem = vipItemService.selectVipItemById(id);
+        OrderItem orderItem = new OrderItem();
+        BeanUtils.copyProperties(vipItem,orderItem,"id");
+        orderItem.setCount(1L);
+        order.setUid(SecurityUtils.getUserId());
+        order.setPrice(vipItem.getPrice().doubleValue());
+        order.setOrderItemList(List.of(orderItem));
         return toAjax(orderService.insertOrder(order));
     }
 }

@@ -55,6 +55,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="note != null  and note != ''"> and note = #{note}</if>
         </where>
     </select>
+
+    <select id="selectOrderListById"  resultMap="OrderOrderItemResult">
+        <include refid="selectOrderVo"/>
+        where uid = #{userId}
+    </select>
     
     <select id="selectOrderById" parameterType="Long" resultMap="OrderOrderItemResult">
         select id, uid, time, price, name, company, country, city, steet1, steet2, postal, phone, email, note

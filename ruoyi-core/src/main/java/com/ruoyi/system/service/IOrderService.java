@@ -27,6 +27,8 @@ public interface IOrderService
      */
     public List<Order> selectOrderList(Order order);
 
+    public List<Order> selectOrderListById(Long userId);
+
     /**
      * 新增订单列表
      * 
